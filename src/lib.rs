@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::sync::OnceLock;
 
 /// See module docs for a usage example
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GemVersion {
     segments: Vec<VersionSegment>,
 }
@@ -130,7 +130,7 @@ pub enum VersionError {
     InvalidVersion(String),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 enum VersionSegment {
     String(String),
     U32(u32),
