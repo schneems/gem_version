@@ -1,0 +1,15 @@
+[package]
+name = "gem_version"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Ruby's Gem::Version comparison logic in Rust"
+keywords = ["Ruby", "version"]
+repository = "https://github.com/schneems/gem_version"
+documentation = "https://docs.rs/gem_version"
+readme = "README.md"
+include = ["src/**/*", "LICENSE", "README.md"]
+
+[dependencies]
+fancy-regex = "0.13.0"
+regex = "1.10.5"
