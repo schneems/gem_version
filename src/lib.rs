@@ -130,6 +130,22 @@ pub enum VersionError {
     InvalidVersion(String),
 }
 
+impl std::error::Error for VersionError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+impl fmt::Display for VersionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            VersionError::InvalidVersion(version) => {
+                write!(f, "Invalid version string: {}", version)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 enum VersionSegment {
     String(String),
@@ -146,6 +162,7 @@ fn drop_right_while<A, P: Fn(&A) -> bool>(i: Vec<A>, pred: P) -> Vec<A> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use clap::Parser;
 
     #[test]
     // https://github.com/rubygems/rubygems/blob/ecc8e895b69063562b9bf749b353948e051e4171/test/rubygems/test_gem_version.rb#L83-L89
@@ -219,5 +236,11 @@ mod test {
     // Test helper method
     fn v(s: &str) -> GemVersion {
         s.parse().unwrap()
+    }
+
+    #[derive(Parser, Debug)]
+    struct Args {
+        #[arg(long)]
+        version: GemVersion,
     }
 }
