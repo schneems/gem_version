@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Relax `serde` version requirement
+
 ## v0.3.0
 
 - `GemVersion` now implements `serde::Serialize` and `serde::Deserialize`
