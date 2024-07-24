@@ -1,5 +1,7 @@
 ## Unreleased
 
+## v0.3.1
+
 - Relax `serde` version requirement
 
 ## v0.3.0
