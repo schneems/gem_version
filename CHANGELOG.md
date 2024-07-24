@@ -1,5 +1,9 @@
 ## Unreleased
 
+## v0.3.0
+
+- `GemVersion` now implements `serde::Serialize` and `serde::Deserialize`
+
 ## v0.2.0
 
 - `GemVersion` now satisfies clap's trait bounds for use in a command line argument. (https://github.com/schneems/gem_version/pull/3)

@@ -6,8 +6,11 @@ use std::fmt;
 use std::str::FromStr;
 use std::sync::OnceLock;
 
+use serde::{Deserialize, Serialize};
+
 /// See module docs for a usage example
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
 pub struct GemVersion {
     segments: Vec<VersionSegment>,
 }
@@ -42,6 +45,20 @@ fn segment_regex() -> &'static regex::Regex {
     SEGMENT_REGEX.get_or_init(|| {
         regex::Regex::new("[0-9]+|[a-z]+").expect("Internal Error: Invalid Regular Expression!")
     })
+}
+
+impl TryFrom<String> for GemVersion {
+    type Error = VersionError;
+
+    fn try_from(version_string: String) -> Result<Self, Self::Error> {
+        Self::from_str(&version_string)
+    }
+}
+
+impl From<GemVersion> for String {
+    fn from(version: GemVersion) -> String {
+        version.to_string()
+    }
 }
 
 impl FromStr for GemVersion {
