@@ -12,21 +12,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct GemVersion {
+    version: String,
     segments: Vec<VersionSegment>,
 }
 
 impl fmt::Display for GemVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let version_string = self
-            .segments
-            .iter()
-            .map(|segment| match segment {
-                VersionSegment::String(s) => s.clone(),
-                VersionSegment::U32(i) => i.to_string(),
-            })
-            .collect::<Vec<String>>()
-            .join(".");
-        write!(f, "{version_string}")
+        write!(f, "{}", self.version)
     }
 }
 
@@ -67,9 +59,12 @@ impl FromStr for GemVersion {
     fn from_str(version_string: &str) -> Result<Self, Self::Err> {
         if version_string.trim().is_empty() {
             Ok(GemVersion {
+                version: String::from("0"),
                 segments: vec![VersionSegment::U32(0)],
             })
         } else if validation_regex().is_match(version_string).unwrap_or(false) {
+            let version = version_string.trim().to_string();
+
             let (segments_l, segments_r) = segment_regex()
                 .find_iter(version_string)
                 .map(|regex_match| {
@@ -99,7 +94,7 @@ impl FromStr for GemVersion {
             let mut segments = segments_l;
             segments.extend(segments_r);
 
-            Ok(GemVersion { segments })
+            Ok(GemVersion { version, segments })
         } else {
             Err(VersionError::InvalidVersion(String::from(version_string)))
         }
@@ -248,6 +243,33 @@ mod test {
                 "2.3422222.222.222222222.22222.ads0as.dasd0.ddd2222.2.qd3e."
             )))
         );
+    }
+
+    #[test]
+    fn display_preserves_original_string() {
+        assert_eq!("4.0.0.preview2", v("4.0.0.preview2").to_string());
+        assert_eq!("4.0.0.preview.2", v("4.0.0.preview.2").to_string());
+        assert_eq!("3.1.2", v("3.1.2").to_string());
+        assert_eq!("1.0", v("1.0").to_string());
+        assert_eq!("1.0.0", v("1.0.0").to_string());
+        assert_eq!("0.0.beta.1", v("0.0.beta.1").to_string());
+    }
+
+    #[test]
+    // https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/test/rubygems/test_gem_version.rb#L69-L73
+    fn equality_with_split_prerelease_segment() {
+        assert_eq!(v("1.2"), v("1.2"));
+        assert_ne!(v("1.2"), v("1.3"));
+        // "b1" is split into segments [b, 1] by the segment regex, same as "b.1"
+        assert_eq!(v("1.2.b1"), v("1.2.b.1"));
+    }
+
+    #[test]
+    // https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/test/rubygems/test_gem_version.rb#L111-L115
+    fn empty_version_display() {
+        assert_eq!("0", v("").to_string());
+        assert_eq!("0", v("   ").to_string());
+        assert_eq!("0", v(" ").to_string());
     }
 
     // Test helper method
