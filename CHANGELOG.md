@@ -3,6 +3,7 @@
 - Fix `license` field in Cargo.toml to `BSD-3-Clause` to match the LICENSE file (was incorrectly set to `MIT`)
 - Remove `Default` implementation from `GemVersion`. There is no meaningful default version string, and providing one via `Default` could silently hide bugs.
 - Fix `Display` implementation to preserve all version segments (e.g. `1.0.0` no longer drops trailing `.0` segments).
+- Fix semver dash comparison: versions like `1.0.0-1` are now correctly treated as pre-releases (less than `1.0.0`). Display is not changed (e.g. `"1.0.0-alpha"` still displays as `"1.0.0-alpha"`, not `"1.0.0.pre.alpha"`).
 
 ## v0.3.1
 
