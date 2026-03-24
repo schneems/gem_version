@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Fix `license` field in Cargo.toml to `BSD-3-Clause` to match the LICENSE file (was incorrectly set to `MIT`)
+
 ## v0.3.1
 
 - Relax `serde` version requirement
