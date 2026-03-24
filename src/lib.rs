@@ -291,6 +291,16 @@ mod test {
     }
 
     #[test]
+    fn serde_roundtrip() {
+        let original = v("3.1.2");
+        let serialized = serde_json::to_string(&original).unwrap();
+        assert_eq!(serialized, "\"3.1.2\"");
+
+        let deserialized: GemVersion = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
     fn ord_enables_sorting() {
         let mut versions = vec![v("3.0"), v("1.0"), v("2.0")];
         versions.sort();
