@@ -35,7 +35,7 @@ fn validation_regex() -> &'static fancy_regex::Regex {
 fn segment_regex() -> &'static regex::Regex {
     static SEGMENT_REGEX: OnceLock<regex::Regex> = OnceLock::new();
     SEGMENT_REGEX.get_or_init(|| {
-        regex::Regex::new("[0-9]+|[a-z]+").expect("Internal Error: Invalid Regular Expression!")
+        regex::Regex::new("[0-9]+|[a-zA-Z]+").expect("Internal Error: Invalid Regular Expression!")
     })
 }
 
@@ -270,6 +270,16 @@ mod test {
         assert_eq!("0", v("").to_string());
         assert_eq!("0", v("   ").to_string());
         assert_eq!("0", v(" ").to_string());
+    }
+
+    #[test]
+    fn uppercase_letters_not_silently_dropped() {
+        // Regression: the segment regex `[0-9]+|[a-z]+` silently drops
+        // uppercase letters (e.g., "Preview2" is parsed as "review2")
+        assert_ne!(v("1.0.0.Preview2"), v("1.0.0.review2"));
+        assert_ne!(v("1.0.0.preview2"), v("1.0.0.Preview2"));
+        assert_ne!(v("1.0P"), v("1.0p"));
+        assert!(v("1.0.0.Preview2") < v("1.0.0.preview2"));
     }
 
     // Test helper method
