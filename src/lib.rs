@@ -9,7 +9,7 @@ use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
 /// See module docs for a usage example
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct GemVersion {
     segments: Vec<VersionSegment>,
