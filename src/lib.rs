@@ -107,8 +107,10 @@ impl PartialEq<GemVersion> for GemVersion {
     }
 }
 
-impl PartialOrd<GemVersion> for GemVersion {
-    fn partial_cmp(&self, other: &GemVersion) -> Option<Ordering> {
+impl Eq for GemVersion {}
+
+impl Ord for GemVersion {
+    fn cmp(&self, other: &Self) -> Ordering {
         let max = cmp::max(self.segments.len(), other.segments.len());
 
         let default = VersionSegment::U32(0);
@@ -122,18 +124,24 @@ impl PartialOrd<GemVersion> for GemVersion {
             }
 
             return match (segment_l, segment_r) {
-                (VersionSegment::U32(_), VersionSegment::String(_)) => Some(Ordering::Greater),
-                (VersionSegment::U32(a), VersionSegment::U32(b)) => a.partial_cmp(b),
-                (VersionSegment::String(_), VersionSegment::U32(_)) => Some(Ordering::Less),
+                (VersionSegment::U32(_), VersionSegment::String(_)) => Ordering::Greater,
+                (VersionSegment::U32(a), VersionSegment::U32(b)) => a.cmp(b),
+                (VersionSegment::String(_), VersionSegment::U32(_)) => Ordering::Less,
                 (VersionSegment::String(a), VersionSegment::String(b)) => {
                     // We have yet to verify that the sorting rules for strings are the same between
                     // Rust's and Ruby's standard library. Tests seem to pass, but here be dragons!
-                    a.partial_cmp(b)
+                    a.cmp(b)
                 }
             };
         }
 
-        Some(Ordering::Equal)
+        Ordering::Equal
+    }
+}
+
+impl PartialOrd<GemVersion> for GemVersion {
+    fn partial_cmp(&self, other: &GemVersion) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -280,6 +288,13 @@ mod test {
         assert_ne!(v("1.0.0.preview2"), v("1.0.0.Preview2"));
         assert_ne!(v("1.0P"), v("1.0p"));
         assert!(v("1.0.0.Preview2") < v("1.0.0.preview2"));
+    }
+
+    #[test]
+    fn ord_enables_sorting() {
+        let mut versions = vec![v("3.0"), v("1.0"), v("2.0")];
+        versions.sort();
+        assert_eq!(versions, vec![v("1.0"), v("2.0"), v("3.0")]);
     }
 
     // Test helper method
