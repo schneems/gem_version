@@ -172,6 +172,70 @@ fn drop_right_while<A, P: Fn(&A) -> bool>(i: Vec<A>, pred: P) -> Vec<A> {
     ret
 }
 
+impl GemVersion {
+    /// Returns a strict re-implementation of the reference Gem::Version
+    ///
+    /// See [`GemVersionStrict`] for documentation
+    pub fn strict(self) -> GemVersionStrict {
+        GemVersionStrict {
+            _inner: GemVersion {
+                version: self.version.replace("-", ".pre."),
+                segments: self.segments,
+            },
+        }
+    }
+}
+
+/// A strict re-implementation of the reference Gem::Version
+///
+/// - Replaces `-` with `.pre.` in the display [logic](https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/lib/rubygems/version.rb#L219-L222).
+///   this was introduced in [this commit](https://github.com/ruby/rubygems/commit/df88d165d89cc7ece9b746589e58d93b76a33628)
+///
+/// ```rust
+/// use std::str::FromStr;
+/// use gem_version::GemVersion;
+///
+/// let version = GemVersion::from_str("1.0.0-alpha1")
+///     .unwrap()
+///     .strict();
+///
+/// assert_eq!("1.0.0.pre.alpha1", &version.to_string());
+/// assert_eq!(
+///     GemVersion::from_str("1.0.0.pre.alpha1").unwrap(),
+///     version
+/// );
+/// ```
+///
+/// Construct via calling [`GemVersion::strict`].
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+pub struct GemVersionStrict {
+    _inner: GemVersion,
+}
+
+impl From<GemVersionStrict> for GemVersion {
+    fn from(value: GemVersionStrict) -> Self {
+        value._inner
+    }
+}
+
+impl fmt::Display for GemVersionStrict {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self._inner)
+    }
+}
+
+impl PartialEq<GemVersion> for GemVersionStrict {
+    fn eq(&self, other: &GemVersion) -> bool {
+        self._inner.eq(other)
+    }
+}
+
+impl PartialEq<GemVersionStrict> for GemVersion {
+    fn eq(&self, other: &GemVersionStrict) -> bool {
+        self.eq(&other._inner)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -298,6 +362,20 @@ mod test {
 
             // Preserves equality logic
             assert_eq!(v(&version.replace("-", ".pre.")), gem);
+        }
+    }
+
+    #[test]
+    fn test_strict_display_replacement() {
+        for version in &["1.0.0-alpha", "1.0.0-beta.2", "1.0.0-1"] {
+            let strict = v(version).strict();
+
+            // Changes display
+            assert_ne!(version, &&strict.to_string());
+            assert_eq!(version.replace("-", ".pre."), strict.to_string());
+
+            // Preserves equality logic
+            assert_eq!(v(version), strict);
         }
     }
 

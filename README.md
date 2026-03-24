@@ -27,3 +27,30 @@ use gem_version::GemVersion;
 let version = GemVersion::from_str("1.0.0").unwrap();
 assert!(version < GemVersion::from_str("2.0.0").unwrap());
 ```
+
+## Diverging behavior
+
+Ruby's Gem::Version reference implementation converts `-` to `.pre.` [commit introduced](https://github.com/ruby/rubygems/commit/df88d165d89cc7ece9b746589e58d93b76a33628). This means the value you put in is not the value you get out:
+
+```ruby
+puts Gem::Version.new("1.0.0-alpha1")
+# => "1.0.0.pre.alpha1"
+```
+
+It seems the coupling between comparison logic and representation was accidental at the time of introduction. This library diverges by showing the original string (and decoupling that from the comparison representation):
+
+```rust
+use std::str::FromStr;
+use gem_version::GemVersion;
+
+let version = GemVersion::from_str("1.0.0-alpha1").unwrap();
+
+assert_eq!("1.0.0-alpha1", &version.to_string());
+// But it performs comparisons as if they were the same.
+assert_eq!(
+    GemVersion::from_str("1.0.0.pre.alpha1").unwrap(),
+    version
+);
+```
+
+If you want the upstream (reference) behavior use [`GemVersionStrict`]. Construct via calling [`GemVersion::strict`].

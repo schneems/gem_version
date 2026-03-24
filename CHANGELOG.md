@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Introduce `GemVersionStrict` that mirrors [the upstream coupling of display and version representation](https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/lib/rubygems/version.rb#L219-L222). Added diverging documentation for `GemVersion`.
 - Fix `license` field in Cargo.toml to `BSD-3-Clause` to match the LICENSE file (was incorrectly set to `MIT`)
 - Remove `Default` implementation from `GemVersion`. There is no meaningful default version string, and providing one via `Default` could silently hide bugs.
 - Fix `Display` implementation to preserve all version segments (e.g. `1.0.0` no longer drops trailing `.0` segments).
