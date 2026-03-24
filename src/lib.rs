@@ -272,6 +272,13 @@ mod test {
         assert_eq!("0", v(" ").to_string());
     }
 
+    #[test]
+    fn uppercase_letters_not_silently_dropped() {
+        // Regression: the segment regex `[0-9]+|[a-z]+` silently drops
+        // uppercase letters (e.g., "Preview2" is parsed as "review2")
+        assert_ne!(v("1.0.0.Preview2"), v("1.0.0.review2"));
+    }
+
     // Test helper method
     fn v(s: &str) -> GemVersion {
         s.parse().unwrap()
