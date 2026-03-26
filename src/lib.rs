@@ -64,9 +64,10 @@ impl FromStr for GemVersion {
             })
         } else if validation_regex().is_match(version_string).unwrap_or(false) {
             let version = version_string.trim().to_string();
+            let for_segments = version.replace('-', ".pre.");
 
             let (segments_l, segments_r) = segment_regex()
-                .find_iter(version_string)
+                .find_iter(&for_segments)
                 .map(|regex_match| {
                     regex_match.as_str().parse::<u32>().ok().map_or_else(
                         || VersionSegment::String(regex_match.as_str().to_string()),
@@ -305,6 +306,34 @@ mod test {
         let mut versions = vec![v("3.0"), v("1.0"), v("2.0")];
         versions.sort();
         assert_eq!(versions, vec![v("1.0"), v("2.0"), v("3.0")]);
+    }
+
+    #[test]
+    // https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/test/rubygems/test_gem_version.rb#L194-L201
+    fn semver_comparison() {
+        assert!(v("1.0.0-alpha") < v("1.0.0-alpha.1"));
+        assert!(v("1.0.0-alpha.1") < v("1.0.0-beta.2"));
+        assert!(v("1.0.0-beta.2") < v("1.0.0-beta.11"));
+        assert!(v("1.0.0-beta.11") < v("1.0.0-rc.1"));
+        assert!(v("1.0.0-rc1") < v("1.0.0"));
+        assert!(v("1.0.0-1") < v("1"));
+    }
+
+    #[test]
+    // Diverges from upstream.
+    // Upstream replaces `-` with `.pre.` in the display introduced in https://github.com/ruby/rubygems/commit/df88d165d89cc7ece9b746589e58d93b76a33628
+    // and still on main https://github.com/ruby/rubygems/blob/dc7307cabf8768e39a08c68f86c149a683b327be/lib/rubygems/version.rb#L219-L222.
+    //
+    // This preserves the comparison behavior, but changes the display behavior
+    fn test_version_display() {
+        for version in &["1.0.0-alpha", "1.0.0-beta.2", "1.0.0-1"] {
+            let gem = v(version);
+            // Does NOT change display
+            assert_eq!(version, &&gem.to_string());
+
+            // Preserves equality logic
+            assert_eq!(v(&version.replace('-', ".pre.")), gem);
+        }
     }
 
     // Test helper method

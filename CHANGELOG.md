@@ -5,6 +5,7 @@
 - Fix `Display` implementation to preserve all version segments (e.g. `1.0.0` no longer drops trailing `.0` segments).
 - Fixed silently dropping uppercase letters from versions. Previously `1.0.0.Preview1` would be stored internally as `1.0.0.review1` due to a regex mistake. Uppercase characters are now correctly represented in versions.
 - Add `Eq` and `Ord` impls for `GemVersion`, enabling use in sorted collections and `.sort()`.
+- Fix semver dash comparison: versions like `1.0.0-1` are now correctly treated as pre-releases (less than `1.0.0`). Display is not changed (e.g. `"1.0.0-alpha"` still displays as `"1.0.0-alpha"`, not `"1.0.0.pre.alpha"`).
 
 ## v0.3.1
 
