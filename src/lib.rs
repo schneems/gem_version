@@ -64,7 +64,7 @@ impl FromStr for GemVersion {
             })
         } else if validation_regex().is_match(version_string).unwrap_or(false) {
             let version = version_string.trim().to_string();
-            let for_segments = version.replace("-", ".pre.");
+            let for_segments = version.replace('-', ".pre.");
 
             let (segments_l, segments_r) = segment_regex()
                 .find_iter(&for_segments)
@@ -332,7 +332,7 @@ mod test {
             assert_eq!(version, &&gem.to_string());
 
             // Preserves equality logic
-            assert_eq!(v(&version.replace("-", ".pre.")), gem);
+            assert_eq!(v(&version.replace('-', ".pre.")), gem);
         }
     }
 
