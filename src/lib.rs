@@ -152,7 +152,7 @@ impl fmt::Display for VersionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             VersionError::InvalidVersion(version) => {
-                write!(f, "Invalid version string: {}", version)
+                write!(f, "Invalid version string: {version}")
             }
         }
     }
