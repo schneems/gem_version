@@ -43,6 +43,10 @@ jobs:
         # Using RUSTDOCFLAGS until `cargo doc --check` is stabilised:
         # https://github.com/rust-lang/cargo/issues/10025
         run: RUSTDOCFLAGS="-D warnings" cargo doc --all-features --document-private-items --no-deps
+      - name: Install cargo-rdme
+        run: cargo install cargo-rdme --locked
+      - name: Check README is up to date
+        run: cargo rdme --check
 
   unit-test:
     runs-on: ubuntu-22.04
