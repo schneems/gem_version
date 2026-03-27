@@ -257,8 +257,6 @@ fn drop_right_while<A>(mut v: Vec<A>, pred: impl Fn(&A) -> bool) -> Vec<A> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use clap::Parser;
-
     #[test]
     // https://github.com/rubygems/rubygems/blob/ecc8e895b69063562b9bf749b353948e051e4171/test/rubygems/test_gem_version.rb#L83-L89
     fn test_initialize() {
@@ -438,11 +436,5 @@ mod test {
     // Test helper method
     fn v(s: &str) -> GemVersion {
         s.parse().unwrap()
-    }
-
-    #[derive(Parser, Debug)]
-    struct Args {
-        #[arg(long)]
-        version: GemVersion,
     }
 }
