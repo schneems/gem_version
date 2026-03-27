@@ -138,6 +138,7 @@ version = "0.3.1"
 dependencies = [
  "clap",
  "fancy-regex",
+ "gem_version",
  "regex",
  "serde",
  "serde_json",
