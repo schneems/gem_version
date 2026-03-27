@@ -62,7 +62,10 @@ impl FromStr for GemVersion {
                 version: String::from("0"),
                 segments: vec![VersionSegment::U32(0)],
             })
-        } else if validation_regex().is_match(version_string).unwrap_or(false) {
+        } else if validation_regex()
+            .is_match(version_string)
+            .map_err(|e| VersionError::RegexError(e.to_string()))?
+        {
             let version = version_string.trim().to_string();
             let for_segments = version.replace('-', ".pre.");
 
@@ -149,6 +152,7 @@ impl PartialOrd<GemVersion> for GemVersion {
 #[derive(Debug, Eq, PartialEq)]
 pub enum VersionError {
     InvalidVersion(String),
+    RegexError(String),
 }
 
 impl std::error::Error for VersionError {
@@ -162,6 +166,9 @@ impl fmt::Display for VersionError {
         match self {
             VersionError::InvalidVersion(version) => {
                 write!(f, "Invalid version string: {version}")
+            }
+            VersionError::RegexError(msg) => {
+                write!(f, "Regex error during version validation: {msg}")
             }
         }
     }
