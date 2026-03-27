@@ -6,11 +6,13 @@ use std::fmt;
 use std::str::FromStr;
 use std::sync::OnceLock;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// See module docs for a usage example
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(try_from = "String", into = "String")]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
 pub struct GemVersion {
     version: String,
     segments: Vec<VersionSegment>,
