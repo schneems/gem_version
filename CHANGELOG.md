@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Make `serde` an optional dependency behind a `serde` feature flag (breaking change)
 - Fix `license` field in Cargo.toml to `BSD-3-Clause` to match the LICENSE file (was incorrectly set to `MIT`)
 - Remove `Default` implementation from `GemVersion`. There is no meaningful default version string, and providing one via `Default` could silently hide bugs.
 - Fix `Display` implementation to preserve all version segments (e.g. `1.0.0` no longer drops trailing `.0` segments).
