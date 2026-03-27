@@ -104,7 +104,19 @@ impl FromStr for GemVersion {
 
 impl PartialEq<GemVersion> for GemVersion {
     fn eq(&self, other: &Self) -> bool {
-        self.partial_cmp(other) == Some(Ordering::Equal)
+        let max = cmp::max(self.segments.len(), other.segments.len());
+        let default = VersionSegment::U32(0);
+
+        for index in 0..max {
+            let segment_l = self.segments.get(index).unwrap_or(&default);
+            let segment_r = other.segments.get(index).unwrap_or(&default);
+
+            if segment_l != segment_r {
+                return false;
+            }
+        }
+
+        true
     }
 }
 
