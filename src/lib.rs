@@ -345,9 +345,9 @@ mod test {
 
     #[test]
     fn hash_consistent_with_eq() {
+        use std::collections::hash_map::DefaultHasher;
         use std::collections::HashSet;
         use std::hash::{Hash, Hasher};
-        use std::collections::hash_map::DefaultHasher;
 
         fn hash_version(v: &GemVersion) -> u64 {
             let mut hasher = DefaultHasher::new();
