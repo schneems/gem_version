@@ -104,19 +104,7 @@ impl FromStr for GemVersion {
 
 impl PartialEq<GemVersion> for GemVersion {
     fn eq(&self, other: &Self) -> bool {
-        let max = cmp::max(self.segments.len(), other.segments.len());
-        let default = VersionSegment::U32(0);
-
-        for index in 0..max {
-            let segment_l = self.segments.get(index).unwrap_or(&default);
-            let segment_r = other.segments.get(index).unwrap_or(&default);
-
-            if segment_l != segment_r {
-                return false;
-            }
-        }
-
-        true
+        self.cmp(other) == Ordering::Equal
     }
 }
 
@@ -125,27 +113,16 @@ impl Eq for GemVersion {}
 impl Ord for GemVersion {
     fn cmp(&self, other: &Self) -> Ordering {
         let max = cmp::max(self.segments.len(), other.segments.len());
-
         let default = VersionSegment::U32(0);
 
         for index in 0..max {
             let segment_l = self.segments.get(index).unwrap_or(&default);
             let segment_r = other.segments.get(index).unwrap_or(&default);
 
-            if segment_l == segment_r {
-                continue;
+            match segment_l.cmp(segment_r) {
+                Ordering::Equal => {}
+                ord => return ord,
             }
-
-            return match (segment_l, segment_r) {
-                (VersionSegment::U32(_), VersionSegment::String(_)) => Ordering::Greater,
-                (VersionSegment::U32(a), VersionSegment::U32(b)) => a.cmp(b),
-                (VersionSegment::String(_), VersionSegment::U32(_)) => Ordering::Less,
-                (VersionSegment::String(a), VersionSegment::String(b)) => {
-                    // We have yet to verify that the sorting rules for strings are the same between
-                    // Rust's and Ruby's standard library. Tests seem to pass, but here be dragons!
-                    a.cmp(b)
-                }
-            };
         }
 
         Ordering::Equal
@@ -183,6 +160,25 @@ impl fmt::Display for VersionError {
 enum VersionSegment {
     String(String),
     U32(u32),
+}
+
+impl PartialOrd for VersionSegment {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for VersionSegment {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (VersionSegment::U32(a), VersionSegment::U32(b)) => a.cmp(b),
+            (VersionSegment::U32(_), VersionSegment::String(_)) => Ordering::Greater,
+            (VersionSegment::String(_), VersionSegment::U32(_)) => Ordering::Less,
+            // We have yet to verify that the sorting rules for strings are the same between
+            // Rust's and Ruby's standard library. Tests seem to pass, but here be dragons!
+            (VersionSegment::String(a), VersionSegment::String(b)) => a.cmp(b),
+        }
+    }
 }
 
 fn drop_right_while<A, P: Fn(&A) -> bool>(i: Vec<A>, pred: P) -> Vec<A> {
