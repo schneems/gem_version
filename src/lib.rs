@@ -3,6 +3,7 @@
 use std::cmp;
 use std::cmp::Ordering;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 use std::sync::OnceLock;
 
@@ -110,6 +111,12 @@ impl PartialEq<GemVersion> for GemVersion {
 
 impl Eq for GemVersion {}
 
+impl Hash for GemVersion {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.segments.hash(state);
+    }
+}
+
 impl Ord for GemVersion {
     fn cmp(&self, other: &Self) -> Ordering {
         let max = cmp::max(self.segments.len(), other.segments.len());
@@ -167,7 +174,7 @@ impl fmt::Display for VersionError {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 enum VersionSegment {
     String(String),
     U32(u32),
@@ -334,6 +341,31 @@ mod test {
             // Preserves equality logic
             assert_eq!(v(&version.replace('-', ".pre.")), gem);
         }
+    }
+
+    #[test]
+    fn hash_consistent_with_eq() {
+        use std::collections::HashSet;
+        use std::hash::{Hash, Hasher};
+        use std::collections::hash_map::DefaultHasher;
+
+        fn hash_version(v: &GemVersion) -> u64 {
+            let mut hasher = DefaultHasher::new();
+            v.hash(&mut hasher);
+            hasher.finish()
+        }
+
+        // Equal versions must produce the same hash
+        assert_eq!(hash_version(&v("1.0")), hash_version(&v("1.0.0")));
+
+        // Different versions should (almost certainly) produce different hashes
+        assert_ne!(hash_version(&v("1.0")), hash_version(&v("2.0")));
+
+        // GemVersion works in a HashSet
+        let mut set = HashSet::new();
+        set.insert(v("1.0"));
+        set.insert(v("1.0.0"));
+        assert_eq!(set.len(), 1);
     }
 
     // Test helper method
