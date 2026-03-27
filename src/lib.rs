@@ -82,11 +82,11 @@ impl fmt::Display for GemVersion {
     }
 }
 
-fn validation_regex() -> &'static fancy_regex::Regex {
-    static VALIDATION_REGEX: OnceLock<fancy_regex::Regex> = OnceLock::new();
+fn validation_regex() -> &'static regex::Regex {
+    static VALIDATION_REGEX: OnceLock<regex::Regex> = OnceLock::new();
     VALIDATION_REGEX.get_or_init(|| {
-        fancy_regex::Regex::new(
-            "\\A\\s*([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?\\s*\\z",
+        regex::Regex::new(
+            "^\\s*([0-9]+(?:\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?\\s*$",
         )
         .expect("Internal error: Bad Regex")
     })
@@ -122,7 +122,7 @@ impl FromStr for GemVersion {
                 version: String::from("0"),
                 segments: vec![VersionSegment::U32(0)],
             })
-        } else if validation_regex().is_match(version_string).unwrap_or(false) {
+        } else if validation_regex().is_match(version_string) {
             let version = version_string.trim().to_string();
             let for_segments = version.replace('-', ".pre.");
 
