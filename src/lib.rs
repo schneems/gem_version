@@ -247,11 +247,11 @@ impl Ord for VersionSegment {
     }
 }
 
-fn drop_right_while<A, P: Fn(&A) -> bool>(i: Vec<A>, pred: P) -> Vec<A> {
-    // There is probably a more efficient way to do this.
-    let mut ret = i.into_iter().rev().skip_while(pred).collect::<Vec<A>>();
-    ret.reverse();
-    ret
+fn drop_right_while<A>(mut v: Vec<A>, pred: impl Fn(&A) -> bool) -> Vec<A> {
+    while v.last().is_some_and(&pred) {
+        v.pop();
+    }
+    v
 }
 
 #[cfg(test)]
